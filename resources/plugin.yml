@@ -1,0 +1,14 @@
+name: gBroadcaster
+main: com.egroen.bukkit.gbroadcaster.GBroadcaster
+version: 0.1a
+description: Broadcast plugin for fun
+author: egroen - Erik Groen
+
+commands:
+  gbc:
+    description: Manage gBroadcaster
+    usage: /<command> stop/start/reload
+
+permissions:
+  gbroadcaster.admin:
+    default: op

@@ -1,0 +1,6 @@
+delay: 10
+prepend: [gBroadcaster]
+messages:
+  - Welcome to this server
+  - Behave and follow the rules!
+  - Cheaters will be banned!
