@@ -43,6 +43,7 @@ public class GBroadcaster extends JavaPlugin {
     private void stopSchedule() {
         if (scheduleId == -1) return;   // Already stopped
         getServer().getScheduler().cancelTask(scheduleId);
+        scheduleId = -1;
     }
     
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
