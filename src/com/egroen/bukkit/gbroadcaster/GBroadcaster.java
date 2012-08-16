@@ -29,11 +29,24 @@ public class GBroadcaster extends JavaPlugin {
         if (scheduleId != -1) return;   // Already started
         scheduleId = getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
             public void run() {
+                // Check if we have something..
                 if (messagesIT == null || !messagesIT.hasNext()) loadMessages();
-                
-                String message = ChatColor.translateAlternateColorCodes('&', messagesIT.next());
+                // Get prepend section
                 String prepend = ChatColor.translateAlternateColorCodes('&', getConfig().getString("prepend"));
-                Bukkit.broadcastMessage(prepend+" "+message);
+                // Traces multi-line
+                boolean takeNextLine;
+                
+                // Iterate trough multi-lines
+                do {
+                    takeNextLine=false;
+                    String message = messagesIT.next();
+                    if (message.endsWith("|")) {
+                        takeNextLine=true;
+                        message = message.substring(0, message.length()-1);
+                    }
+                    message = ChatColor.translateAlternateColorCodes('&', message);
+                    Bukkit.broadcastMessage(prepend+" "+message);
+                } while (takeNextLine && messagesIT.hasNext()); // Go as long as takeNextLine says and the list can give.
             }
             
            
