@@ -1,5 +1,5 @@
 delay: 10
-prepend: [gBroadcaster]
+prepend: "&c[&3gBroadcaster&c]&2"
 messages:
 - Welcome to this server
 - Behave and follow the rules!|

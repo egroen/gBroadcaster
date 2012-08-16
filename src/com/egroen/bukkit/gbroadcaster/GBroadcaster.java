@@ -6,31 +6,39 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class GBroadcaster extends JavaPlugin {
+public class GBroadcaster extends JavaPlugin implements Listener {
 
     private Iterator<String> messagesIT = null;
-    private int scheduleId = -1;
+    private int scheduleId = 0; // 0 = automatic disabled, -1 = manual disabled
     
     public void onEnable() {
         getConfig().options().copyDefaults(true);
         saveConfig();
         
+        // Register itself as event handler
+        getServer().getPluginManager().registerEvents(this,this);
         
         loadMessages();
-        startSchedule();
+        // If reload while players are online..
+        if (Bukkit.getOnlinePlayers().length > 0 && scheduleId == 0) startSchedule();
     }
     
-    public void onDisable() { stopSchedule(); }
+    public void onDisable() { stopSchedule(true); }
     
     private void loadMessages() { messagesIT = getConfig().getStringList("messages").iterator(); }
     private void startSchedule() {
-        if (scheduleId != -1) return;   // Already started
+        if (scheduleId > 0) return;   // Already started
         scheduleId = getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
             public void run() {
                 // Check if we have something..
                 if (messagesIT == null || !messagesIT.hasNext()) loadMessages();
+                
                 // Get prepend section
                 String prepend = ChatColor.translateAlternateColorCodes('&', getConfig().getString("prepend"));
                 // Traces multi-line
@@ -53,10 +61,10 @@ public class GBroadcaster extends JavaPlugin {
         }, 0, getConfig().getLong("delay")*20L);
     }
     
-    private void stopSchedule() {
-        if (scheduleId == -1) return;   // Already stopped
+    private void stopSchedule(boolean auto) {
+        if (scheduleId <= 0) return;   // Already stopped
         getServer().getScheduler().cancelTask(scheduleId);
-        scheduleId = -1;
+        scheduleId = auto ? 0 : -1;
     }
     
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
@@ -78,7 +86,7 @@ public class GBroadcaster extends JavaPlugin {
             if ("stop".equalsIgnoreCase(args[0])) {
                 if (scheduleId != -1) {
                     sender.sendMessage("Broadcasting has been disabled!");
-                    stopSchedule();
+                    stopSchedule(false);
                 } else {
                     sender.sendMessage("Broadcast is already disabled!");
                 }
@@ -94,5 +102,17 @@ public class GBroadcaster extends JavaPlugin {
         }
         
         return false;
+    }
+    
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent ev) {
+        // If first player joined and its autostopped, start it
+        if (Bukkit.getOnlinePlayers().length == 1 && scheduleId == 0) startSchedule();
+    }
+    
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent ev) {
+        // If last player quit and schedule is on, stop id.
+        if (Bukkit.getOnlinePlayers().length == 0  && scheduleId > 0) stopSchedule(true);
     }
 }
