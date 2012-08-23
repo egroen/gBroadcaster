@@ -68,7 +68,7 @@ public class GBroadcaster extends JavaPlugin implements Listener {
     }
     
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-        if (sender instanceof Player && ((Player)sender).hasPermission("gbroadcaster.admin")) {
+        if (sender instanceof Player && !((Player)sender).hasPermission("gbroadcaster.admin")) {
             sender.sendMessage("You do not have access to this command!");
             return true;
         }
